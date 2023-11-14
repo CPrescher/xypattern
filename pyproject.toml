@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xypattern"
-version = "1.0.2"
+version = "1.0.5"
 description = "Library for handling x-y pattern data."
 authors = ["Clemens Prescher <clemens.prescher@gmail.com>"]
 license = "MIT"
@@ -29,11 +29,21 @@ vcs = "git"
 pattern = "default-unprefixed"
 style = "semver"
 
+[tool.poetry-dynamic-versioning.substitution]
+files = ["dioptas/__init__.py"]
+
+
 
 [tool.poetry.dependencies]
-python = ">3.10, <3.13"
-numpy = "^1.26.0"
-scipy = "^1.11.3"
+python = ">=3.8, <3.13"
+numpy = [
+  { version = "^1.24.0", python = "<3.10" },
+  { version = "^1.26.0", python = ">=3.10" }
+]
+scipy = [
+  { version = "^1.9.3", python = "<3.10" },
+  { version = "^1.11.3", python = ">=3.10" }
+]
 
 
 [tool.poetry.group.dev.dependencies]
