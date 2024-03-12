@@ -41,7 +41,7 @@ class Pattern(object):
         self._smoothing = 0.0
         self._background_pattern = None
 
-        self._auto_bkg: AutoBackground = None
+        self._auto_bkg: AutoBackground | None = None
 
         self._pattern_x = self._original_x
         self._pattern_y = self._original_y
