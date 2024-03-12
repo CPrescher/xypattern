@@ -439,6 +439,75 @@ class Pattern(object):
 
         return pattern
 
+    def delete_range(self, x_range: list) -> Pattern:
+        """
+        Creates a new pattern from the provided pattern, in which 
+        the data points within the provided range are deleted.
+
+        :param x_range: List of two floats of x values, 
+         The data points within x_range[0] and x_range[1] 
+         are deleted from the pattern.
+        :return: New pattern without data points that lie within
+         the provided range
+        
+        Example:
+        >>> test_pattern = Pattern(np.arange(1, 11) / 10, np.arange(11, 21) / 10)
+        >>> test_pattern.x
+        array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1. ])
+        >>> test_pattern.y
+        array([1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2. ])
+        >>> new_pattern = test_pattern.delete_range([0.33, 0.85])
+        >>> new_pattern.x
+        array([0.1, 0.2, 0.3, 0.9, 1. ])
+        >>> new_pattern.y
+        array([1.1, 1.2, 1.3, 1.9, 2. ])
+        >>> test_pattern.x
+        array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1. ])
+        >>> test_pattern.y
+        array([1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2. ])
+        """
+        x, y = self.data
+        ind = np.where((x < x_range[0]) | (x > x_range[1]))
+        
+        return Pattern(x[ind], y[ind])
+    
+    def delete_ranges(self, x_ranges: list) -> Pattern:
+        """
+        Creates a new pattern from the provided pattern, in which
+        the data points within each of the provided ranges are deleted.
+        This is similar to the delete_range function, but allows 
+        the deletion of data points within several ranges provided.
+
+        :param x_ranges: List containing lists of floats of x values, 
+         The data points between the two x values provided in each 
+         of the lists are deleted from the pattern. 
+        :return: New pattern without data points that lie within 
+         the provided ranges
+        
+        Example:
+        >>> test_pattern = Pattern(np.arange(1, 11) / 10, np.arange(11, 21) / 10)
+        >>> test_pattern.x
+        array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1. ])
+        >>> test_pattern.y
+        array([1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2. ])
+        >>> new_pattern = test_pattern.delete_ranges([[0.22, 0.41], [0.7, 0.9]])
+        >>> new_pattern.x
+        array([0.1, 0.2, 0.5, 0.6, 1. ])
+        >>> new_pattern.y
+        array([1.1, 1.2, 1.5, 1.6, 2. ])
+        >>> test_pattern.x
+        array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1. ])
+        >>> test_pattern.y
+        array([1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2. ])
+        """
+        x, y = self.data
+        for r in x_ranges:
+            ind = np.where((x < r[0]) | (x > r[1]))
+            x, y = x[ind], y[ind]
+                
+        return Pattern(x, y)
+
+
     ###########################################################
     # Operators:
 
