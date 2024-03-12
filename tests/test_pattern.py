@@ -32,14 +32,16 @@ data_path = os.path.join(unittest_path, 'data')
 
 
 def test_loading_chi_file():
-    spec = Pattern()
-    x, y = spec.data
+    pattern = Pattern()
+    x, y = pattern.data
 
-    spec.load(os.path.join(data_path, 'pattern_001.chi'))
-    new_x, new_y = spec.data
+    pattern.load(os.path.join(data_path, 'pattern_001.chi'))
+    new_x, new_y = pattern.data
 
     assert len(x) != len(new_x)
     assert len(y) != len(new_y)
+    assert pattern.name == 'pattern_001'
+    assert pattern.filename == os.path.join(data_path, 'pattern_001.chi')
 
 
 def test_loading_invalid_file():
@@ -49,9 +51,11 @@ def test_loading_invalid_file():
 
 
 def test_loading_from_file_chi():
-    spec = Pattern.from_file(os.path.join(data_path, 'pattern_001.chi'))
-    assert len(spec.x) == 75
-    assert len(spec.y) == 75
+    pattern = Pattern.from_file(os.path.join(data_path, 'pattern_001.chi'))
+    assert len(pattern.x) == 75
+    assert len(pattern.y) == 75
+    assert pattern.name == 'pattern_001'
+    assert pattern.filename == os.path.join(data_path, 'pattern_001.chi')
 
 
 def test_loading_from_file_invalid():

@@ -36,6 +36,7 @@ class Pattern(object):
             self._original_y = y
 
         self.name = name
+        self.filename = ""
         self._offset = 0.0
         self._scaling = 1.0
         self._smoothing = 0.0
@@ -65,6 +66,7 @@ class Pattern(object):
             data = np.loadtxt(filename, skiprows=skiprows)
             self._original_x = data.T[0]
             self._original_y = data.T[1]
+            self.filename = filename
             self.name = os.path.basename(filename).split('.')[:-1][0]
             self.recalculate_pattern()
 
@@ -81,13 +83,9 @@ class Pattern(object):
         :param skip_rows: number of rows to skip when loading the data (header)
         """
         try:
-            if filename.endswith('.chi'):
-                skip_rows = 4
-            data = np.loadtxt(filename, skiprows=skip_rows)
-            x = data.T[0]
-            y = data.T[1]
-            name = os.path.basename(filename).split('.')[:-1][0]
-            return Pattern(x, y, name)
+            pattern = Pattern()
+            pattern.load(filename, skip_rows)
+            return pattern
 
         except ValueError:
             raise ValueError('Wrong data format for pattern file! - ' + filename)
