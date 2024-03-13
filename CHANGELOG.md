@@ -1,4 +1,4 @@
-# 1.1.0 (under development)
+# 1.1.0 (2024-03-13)
 
 - added feature to delete a range in a pattern
 - added filename field in pattern, which contains complete filepath (name will still just hold the name)
