@@ -22,7 +22,7 @@ class Pattern(object):
     :param name: name of the pattern
     """
 
-    def __init__(self, x: np.ndarray = None, y: np.ndarray = None, name: str = ''):
+    def __init__(self, x: np.ndarray = None, y: np.ndarray = None, name: str = ""):
         """
         Creates a new Pattern object, x and y should have the same shape.
         """
@@ -31,7 +31,9 @@ class Pattern(object):
         else:
             self._original_x = x
         if y is None:
-            self._original_y = np.log(self._original_x ** 2) - (self._original_x * 0.2) ** 2
+            self._original_y = (
+                np.log(self._original_x**2) - (self._original_x * 0.2) ** 2
+            )
         else:
             self._original_y = y
 
@@ -43,6 +45,7 @@ class Pattern(object):
         self._background_pattern = None
 
         self._auto_bkg: AutoBackground | None = None
+        self._auto_bkg_roi: list[float] | None = None
 
         self._pattern_x = self._original_x
         self._pattern_y = self._original_y
@@ -61,20 +64,20 @@ class Pattern(object):
         :param skiprows: number of rows to skip when loading the data (header)
         """
         try:
-            if filename.endswith('.chi'):
+            if filename.endswith(".chi"):
                 skiprows = 4
             data = np.loadtxt(filename, skiprows=skiprows)
             self._original_x = data.T[0]
             self._original_y = data.T[1]
             self.filename = filename
-            self.name = os.path.basename(filename).split('.')[:-1][0]
+            self.name = os.path.basename(filename).split(".")[:-1][0]
             self.recalculate_pattern()
 
         except ValueError:
-            raise ValueError('Wrong data format for pattern file! - ' + filename)
+            raise ValueError("Wrong data format for pattern file! - " + filename)
 
     @staticmethod
-    def from_file(filename: str, skip_rows: int = 0) -> Pattern | '-1':
+    def from_file(filename: str, skip_rows: int = 0) -> Pattern | "-1":
         """
         Loads a pattern from a file. The file can be either a .xy or a .chi file. The .chi file will be loaded with
         skiprows=4 by default.
@@ -88,9 +91,9 @@ class Pattern(object):
             return pattern
 
         except ValueError:
-            raise ValueError('Wrong data format for pattern file! - ' + filename)
+            raise ValueError("Wrong data format for pattern file! - " + filename)
 
-    def save(self, filename, header='', subtract_background=False, unit='2th_deg'):
+    def save(self, filename, header="", subtract_background=False, unit="2th_deg"):
         """
         Saves the x, y data to file. Supporting several file formats: .chi, .xy, .fxye
         :param filename: where to save the data
@@ -104,29 +107,35 @@ class Pattern(object):
 
         num_points = len(x)
 
-        file_handle = open(filename, 'w')
+        file_handle = open(filename, "w")
 
-        if filename.endswith('.chi'):
-            if header is None or header == '':
-                file_handle.write(filename + '\n')
-                file_handle.write(unit + '\n\n')
+        if filename.endswith(".chi"):
+            if header is None or header == "":
+                file_handle.write(filename + "\n")
+                file_handle.write(unit + "\n\n")
                 file_handle.write("       {0}\n".format(num_points))
             else:
                 file_handle.write(header)
             for ind in range(num_points):
-                file_handle.write(' {0:.7E}  {1:.7E}\n'.format(x[ind], y[ind]))
-        elif filename.endswith('.fxye'):
+                file_handle.write(" {0:.7E}  {1:.7E}\n".format(x[ind], y[ind]))
+        elif filename.endswith(".fxye"):
             factor = 100
-            if 'CONQ' in header:
+            if "CONQ" in header:
                 factor = 1
-            header = header.replace('NUM_POINTS', '{0:.6g}'.format(num_points))
-            header = header.replace('MIN_X_VAL', '{0:.6g}'.format(factor * x[0]))
-            header = header.replace('STEP_X_VAL', '{0:.6g}'.format(factor * (x[1] - x[0])))
+            header = header.replace("NUM_POINTS", "{0:.6g}".format(num_points))
+            header = header.replace("MIN_X_VAL", "{0:.6g}".format(factor * x[0]))
+            header = header.replace(
+                "STEP_X_VAL", "{0:.6g}".format(factor * (x[1] - x[0]))
+            )
 
             file_handle.write(header)
-            file_handle.write('\n')
+            file_handle.write("\n")
             for ind in range(num_points):
-                file_handle.write('\t{0:.6g}\t{1:.6g}\t{2:.6g}\n'.format(factor * x[ind], y[ind], np.sqrt(abs(y[ind]))))
+                file_handle.write(
+                    "\t{0:.6g}\t{1:.6g}\t{2:.6g}\n".format(
+                        factor * x[ind], y[ind], np.sqrt(abs(y[ind]))
+                    )
+                )
         else:
 
             data = np.dstack((x, y))
@@ -164,8 +173,7 @@ class Pattern(object):
         new_x = np.arange(x_min, x_max + 0.1 * bin_size, bin_size)
 
         bins = np.hstack((x_min - bin_size * 0.5, new_x + bin_size * 0.5))
-        new_y = (np.histogram(x, bins, weights=y)
-                 [0] / np.histogram(x, bins)[0])
+        new_y = np.histogram(x, bins, weights=y)[0] / np.histogram(x, bins)[0]
 
         return Pattern(new_x, new_y)
 
@@ -192,11 +200,13 @@ class Pattern(object):
 
             if not np.array_equal(x_bkg, self._original_x):
                 # the background will be interpolated
-                f_bkg = interp1d(x_bkg, y_bkg, kind='linear')
+                f_bkg = interp1d(x_bkg, y_bkg, kind="linear")
 
                 # find overlapping x and y values:
-                ind = np.where((self._original_x <= np.max(x_bkg)) &
-                               (self._original_x >= np.min(x_bkg)))
+                ind = np.where(
+                    (self._original_x <= np.max(x_bkg))
+                    & (self._original_x >= np.min(x_bkg))
+                )
                 x = self._original_x[ind]
                 y = self._original_y[ind]
 
@@ -207,16 +217,23 @@ class Pattern(object):
                 y = y * self._scaling + self.offset - f_bkg(x)
             else:
                 # if pattern and bkg have the same x basis we just delete y-y_bkg
-                x, y = self._original_x, self._original_y * self._scaling + self.offset - y_bkg
+                x, y = (
+                    self._original_x,
+                    self._original_y * self._scaling + self.offset - y_bkg,
+                )
         else:
             x, y = self.original_data
             y = y * self.scaling + self.offset
 
         if self._auto_bkg is not None:
             self._auto_background_before_subtraction_pattern = Pattern(x, y)
-            x, y = self._auto_background_before_subtraction_pattern.limit(*self._auto_bkg_roi).data
+            x, y = self._auto_background_before_subtraction_pattern.limit(
+                *self._auto_bkg_roi
+            ).data
             y_bkg = self._auto_bkg.extract_background(Pattern(x, y))
-            self._auto_background_pattern = Pattern(x, y_bkg, name='auto_bkg_' + self.name)
+            self._auto_background_pattern = Pattern(
+                x, y_bkg, name="auto_bkg_" + self.name
+            )
             y -= y_bkg
 
         if self.smoothing > 0:
@@ -250,35 +267,35 @@ class Pattern(object):
 
     @property
     def x(self) -> np.ndarray:
-        """ Returns the x values of the pattern """
+        """Returns the x values of the pattern"""
         return self._pattern_x
 
     @x.setter
     def x(self, new_value: np.ndarray):
-        """ Sets the x values of the pattern """
+        """Sets the x values of the pattern"""
         self._original_x = new_value
         self.recalculate_pattern()
 
     @property
     def y(self) -> np.ndarray:
-        """ Returns the y values of the pattern """
+        """Returns the y values of the pattern"""
         return self._pattern_y
 
     @y.setter
     def y(self, new_y: np.ndarray):
-        """ Sets the y values of the pattern """
+        """Sets the y values of the pattern"""
         self._original_y = new_y
         self.recalculate_pattern()
 
     @property
     def scaling(self) -> float:
-        """ Returns the scaling of the pattern """
+        """Returns the scaling of the pattern"""
         return self._scaling
 
     @scaling.setter
     def scaling(self, value):
-        """ 
-        Sets the scaling of the pattern, if below 0, it will be set to 0 
+        """
+        Sets the scaling of the pattern, if below 0, it will be set to 0
         instead.
         """
         if value < 0:
@@ -289,27 +306,29 @@ class Pattern(object):
 
     @property
     def offset(self) -> float:
-        """ Returns the offset of the pattern """
+        """Returns the offset of the pattern"""
         return self._offset
 
     @offset.setter
     def offset(self, value):
-        """ Sets the offset of the pattern """
+        """Sets the offset of the pattern"""
         self._offset = value
         self.recalculate_pattern()
 
     @property
     def smoothing(self) -> float:
-        """ Returns the smoothing of the pattern """
+        """Returns the smoothing of the pattern"""
         return self._smoothing
 
     @smoothing.setter
     def smoothing(self, value):
-        """ Sets the smoothing of the pattern """
+        """Sets the smoothing of the pattern"""
         self._smoothing = value
         self.recalculate_pattern()
 
-    def set_auto_background_subtraction(self, parameters: list[float], roi: list[float] = None, recalc_pattern=True):
+    def set_auto_background_subtraction(
+        self, parameters: list[float], roi: list[float] = None, recalc_pattern=True
+    ):
         """
         Sets an automatic background subtraction to the pattern. The background will be subtracted from the pattern
         when calling the data property.
@@ -358,8 +377,10 @@ class Pattern(object):
         :return: limited Pattern
         """
         x, y = self.data
-        return Pattern(x[np.where((x_min < x) & (x < x_max))],
-                       y[np.where((x_min < x) & (x < x_max))])
+        return Pattern(
+            x[np.where((x_min < x) & (x < x_max))],
+            y[np.where((x_min < x) & (x < x_max))],
+        )
 
     def extend_to(self, x_value: float, y_value: float) -> Pattern:
         """
@@ -375,8 +396,7 @@ class Pattern(object):
         x_min = np.min(self.x)
         x_max = np.max(self.x)
         if x_value < x_min:
-            x_fill = np.arange(x_min - x_step, x_value -
-                               x_step * 0.5, -x_step)[::-1]
+            x_fill = np.arange(x_min - x_step, x_value - x_step * 0.5, -x_step)[::-1]
             y_fill = np.zeros(x_fill.shape)
             y_fill.fill(y_value)
 
@@ -401,14 +421,17 @@ class Pattern(object):
         :return: dictionary representation of the pattern
         """
         return {
-            'name': self.name,
-            'x': self._original_x.tolist(),
-            'y': self._original_y.tolist(),
-            'scaling': self.scaling,
-            'offset': self.offset,
-            'smoothing': self.smoothing,
-            'bkg_pattern': self._background_pattern.to_dict() if self._background_pattern is
-                                                                 not None else None
+            "name": self.name,
+            "x": self._original_x.tolist(),
+            "y": self._original_y.tolist(),
+            "scaling": self.scaling,
+            "offset": self.offset,
+            "smoothing": self.smoothing,
+            "bkg_pattern": (
+                self._background_pattern.to_dict()
+                if self._background_pattern is not None
+                else None
+            ),
         }
 
     @staticmethod
@@ -419,35 +442,35 @@ class Pattern(object):
         :param json_dict: dictionary representation of a Pattern
         :return: new Pattern
         """
-        pattern = Pattern(np.array(json_dict['x']),
-                          np.array(json_dict['y']),
-                          json_dict['name'])
+        pattern = Pattern(
+            np.array(json_dict["x"]), np.array(json_dict["y"]), json_dict["name"]
+        )
 
-        pattern.scaling = json_dict['scaling']
-        pattern.offset = json_dict['offset']
+        pattern.scaling = json_dict["scaling"]
+        pattern.offset = json_dict["offset"]
 
-        if json_dict['bkg_pattern'] is not None:
-            bkg_pattern = Pattern.from_dict(json_dict['bkg_pattern'])
+        if json_dict["bkg_pattern"] is not None:
+            bkg_pattern = Pattern.from_dict(json_dict["bkg_pattern"])
         else:
             bkg_pattern = None
         pattern.background_pattern = bkg_pattern
 
-        pattern.smoothing = json_dict['smoothing']
+        pattern.smoothing = json_dict["smoothing"]
         pattern.recalculate_pattern()
 
         return pattern
 
     def delete_range(self, x_range: list) -> Pattern:
         """
-        Creates a new pattern from the provided pattern, in which 
+        Creates a new pattern from the provided pattern, in which
         the data points within the provided range are deleted.
 
-        :param x_range: List of two floats of x values, 
-         The data points within x_range[0] and x_range[1] 
+        :param x_range: List of two floats of x values,
+         The data points within x_range[0] and x_range[1]
          are deleted from the pattern.
         :return: New pattern without data points that lie within
          the provided range
-        
+
         Example:
         >>> test_pattern = Pattern(np.arange(1, 11) / 10, np.arange(11, 21) / 10)
         >>> test_pattern.x
@@ -466,22 +489,22 @@ class Pattern(object):
         """
         x, y = self.data
         ind = np.where((x < x_range[0]) | (x > x_range[1]))
-        
+
         return Pattern(x[ind], y[ind])
-    
+
     def delete_ranges(self, x_ranges: list) -> Pattern:
         """
         Creates a new pattern from the provided pattern, in which
         the data points within each of the provided ranges are deleted.
-        This is similar to the delete_range function, but allows 
+        This is similar to the delete_range function, but allows
         the deletion of data points within several ranges provided.
 
-        :param x_ranges: List containing lists of floats of x values, 
-         The data points between the two x values provided in each 
-         of the lists are deleted from the pattern. 
-        :return: New pattern without data points that lie within 
+        :param x_ranges: List containing lists of floats of x values,
+         The data points between the two x values provided in each
+         of the lists are deleted from the pattern.
+        :return: New pattern without data points that lie within
          the provided ranges
-        
+
         Example:
         >>> test_pattern = Pattern(np.arange(1, 11) / 10, np.arange(11, 21) / 10)
         >>> test_pattern.x
@@ -502,9 +525,40 @@ class Pattern(object):
         for r in x_ranges:
             ind = np.where((x < r[0]) | (x > r[1]))
             x, y = x[ind], y[ind]
-                
+
         return Pattern(x, y)
 
+    def transform_x(self, fcn: callable) -> Pattern:
+        """
+        Transforms the x values of the pattern using the provided function. This takes
+        care to also update the corresponding background pattern or auto background pattern
+
+        Example:
+        >>> test_pattern = Pattern(np.arange(1, 11) / 10, np.arange(11, 21) / 10)
+        >>> test_pattern.x
+        array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1. ])
+
+        >>> new_pattern = test_pattern.transform_x(lambda x: x ** 2)
+        >>> new_pattern.x
+        array([0.01, 0.04, 0.09, 0.16, 0.25, 0.36, 0.49, 0.64, 0.81, 1.  ])
+
+
+        :param fcn: function to transform the x values
+        :return: new Pattern
+        """
+        self.x = fcn(self.x)
+        if self._background_pattern is not None:
+            self._background_pattern.x = fcn(self._background_pattern.x)
+
+        if self._auto_bkg_roi is not None:
+            self._auto_bkg_roi = fcn(np.array(self._auto_bkg_roi))
+
+        if self._auto_bkg is not None:
+            self._auto_bkg.transform_x(fcn)
+
+        self.recalculate_pattern()
+
+        return self
 
     ###########################################################
     # Operators:
@@ -525,7 +579,7 @@ class Pattern(object):
 
         if orig_x.shape != other_x.shape:
             # the background will be interpolated
-            other_fcn = interp1d(other_x, other_y, kind='cubic')
+            other_fcn = interp1d(other_x, other_y, kind="cubic")
 
             # find overlapping x and y values:
             ind = np.where((orig_x <= np.max(other_x)) & (orig_x >= np.min(other_x)))
@@ -543,8 +597,8 @@ class Pattern(object):
         """
         Adds the other pattern to the current one. If the other pattern
         has a different shape, the addition will be done on the overlapping
-        x-values and the y-values of the other pattern will be interpolated. 
-        If there is no overlapping between the two patterns, a BkgNotInRangeror 
+        x-values and the y-values of the other pattern will be interpolated.
+        If there is no overlapping between the two patterns, a BkgNotInRangeror
         will be raised.
 
         :param other: Pattern to be added
@@ -555,7 +609,7 @@ class Pattern(object):
 
         if orig_x.shape != other_x.shape:
             # the background will be interpolated
-            other_fcn = interp1d(other_x, other_y, kind='linear')
+            other_fcn = interp1d(other_x, other_y, kind="linear")
 
             # find overlapping x and y values:
             ind = np.where((orig_x <= np.max(other_x)) & (orig_x >= np.min(other_x)))
@@ -597,7 +651,7 @@ class Pattern(object):
         return len(self.x)
 
     def __str__(self):
-        return f'Pattern \'{self.name}\' with {len(self)} points'
+        return f"Pattern '{self.name}' with {len(self)} points"
 
 
 class BkgNotInRangeError(Exception):
@@ -605,4 +659,7 @@ class BkgNotInRangeError(Exception):
         self.pattern_name = pattern_name
 
     def __str__(self):
-        return "The background range does not overlap with the Pattern range for " + self.pattern_name
+        return (
+            "The background range does not overlap with the Pattern range for "
+            + self.pattern_name
+        )

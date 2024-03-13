@@ -388,3 +388,26 @@ def test_delete_ranges():
                                                      np.array([30])
                                                      )))
 
+def test_transform_x():
+    x = np.linspace(0, 10, 100)
+    pattern = Pattern(x, np.sin(x))
+    pattern.transform_x(lambda x: x + 2)
+    assert np.array_equal(pattern.x, x + 2)
+
+
+def test_transform_x_with_pattern_bkg():
+    x = np.linspace(0, 10, 100)
+    pattern = Pattern(x, np.sin(x))
+    pattern.background_pattern = Pattern(x, np.cos(x))
+    pattern.transform_x(lambda x: x + 2)
+
+    assert np.array_equal(pattern.x, x + 2)
+    assert np.array_equal(pattern.background_pattern.x, x + 2)
+
+
+def test_transform_x_with_auto_bkg():
+    x = np.linspace(0, 10, 100)
+    pattern = Pattern(x, np.sin(x))
+    pattern.set_auto_background_subtraction([2, 50, 50])
+    pattern.transform_x(lambda x: x + 2)
+    assert np.array_equal(pattern.x, x + 2)
