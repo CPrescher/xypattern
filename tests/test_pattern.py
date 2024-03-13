@@ -28,44 +28,44 @@ from xypattern import Pattern
 from .test_util import generate_peak_pattern, gaussian
 
 unittest_path = os.path.dirname(__file__)
-data_path = os.path.join(unittest_path, 'data')
+data_path = os.path.join(unittest_path, "data")
 
 
 def test_loading_chi_file():
     pattern = Pattern()
     x, y = pattern.data
 
-    pattern.load(os.path.join(data_path, 'pattern_001.chi'))
+    pattern.load(os.path.join(data_path, "pattern_001.chi"))
     new_x, new_y = pattern.data
 
     assert len(x) != len(new_x)
     assert len(y) != len(new_y)
-    assert pattern.name == 'pattern_001'
-    assert pattern.filename == os.path.join(data_path, 'pattern_001.chi')
+    assert pattern.name == "pattern_001"
+    assert pattern.filename == os.path.join(data_path, "pattern_001.chi")
 
 
 def test_loading_invalid_file():
     pattern = Pattern()
     with pytest.raises(ValueError):
-        pattern.load(os.path.join(data_path, 'wrong_file_format.txt'))
+        pattern.load(os.path.join(data_path, "wrong_file_format.txt"))
 
 
 def test_loading_from_file_chi():
-    pattern = Pattern.from_file(os.path.join(data_path, 'pattern_001.chi'))
+    pattern = Pattern.from_file(os.path.join(data_path, "pattern_001.chi"))
     assert len(pattern.x) == 75
     assert len(pattern.y) == 75
-    assert pattern.name == 'pattern_001'
-    assert pattern.filename == os.path.join(data_path, 'pattern_001.chi')
+    assert pattern.name == "pattern_001"
+    assert pattern.filename == os.path.join(data_path, "pattern_001.chi")
 
 
 def test_loading_from_file_invalid():
     with pytest.raises(ValueError):
-        Pattern.from_file(os.path.join(data_path, 'wrong_file_format.txt'))
+        Pattern.from_file(os.path.join(data_path, "wrong_file_format.txt"))
 
 
 def test_saving_a_dat_file(tmp_path):
     x = np.linspace(-5, 5, 100)
-    y = x ** 2
+    y = x**2
     pattern = Pattern(x, y)
     filename = os.path.join(tmp_path, "test.dat")
     pattern.save(filename)
@@ -80,7 +80,7 @@ def test_saving_a_dat_file(tmp_path):
 
 def test_saving_a_chi_file(tmp_path):
     x = np.linspace(-5, 5, 100)
-    y = x ** 2
+    y = x**2
     pattern = Pattern(x, y)
     filename = os.path.join(tmp_path, "test.chi")
     pattern.save(filename)
@@ -94,14 +94,14 @@ def test_saving_a_chi_file(tmp_path):
 
     with open(filename) as f:
         lines = f.readlines()
-        assert lines[0].endswith('test.chi\n')
-        assert lines[1] == '2th_deg\n'
-        assert lines[3].endswith(f'{len(pattern2_x)}\n')
+        assert lines[0].endswith("test.chi\n")
+        assert lines[1] == "2th_deg\n"
+        assert lines[3].endswith(f"{len(pattern2_x)}\n")
 
 
 def test_saving_a_fxye_file(tmp_path):
     x = np.linspace(-5, 5, 100)
-    y = x ** 2
+    y = x**2
     pattern = Pattern(x, y)
     filename = os.path.join(tmp_path, "test.fxye")
     pattern.save(filename)
@@ -161,7 +161,7 @@ def test_multiply_with_scalar_operator():
 
 def test_using_background_pattern():
     x = np.linspace(-5, 5, 100)
-    pattern_y = x ** 2
+    pattern_y = x**2
     bkg_y = x
 
     spec = Pattern(x, pattern_y)
@@ -176,7 +176,7 @@ def test_using_background_pattern():
 
 def test_using_background_pattern_with_different_spacing():
     x = np.linspace(-5, 5, 100)
-    pattern_y = x ** 2
+    pattern_y = x**2
     x_bkg = np.linspace(-5, 5, 99)
     bkg_y = x_bkg
 
@@ -192,7 +192,7 @@ def test_using_background_pattern_with_different_spacing():
 
 def test_changing_the_background_pattern_parameters():
     x = np.linspace(-5, 5, 100)
-    pattern_y = x ** 2
+    pattern_y = x**2
     bkg_y = x
 
     spec = Pattern(x, pattern_y)
@@ -213,7 +213,7 @@ def test_changing_the_background_pattern_parameters():
 
 def test_changing_the_background_pattern_to_new_background():
     x = np.linspace(-5, 5, 100)
-    pattern_y = x ** 2
+    pattern_y = x**2
     bkg_y = x
 
     pattern = Pattern(x, pattern_y)
@@ -280,7 +280,7 @@ def test_setting_new_data():
 
 def test_using_len():
     x = np.linspace(0, 10, 234)
-    y = x ** 2
+    y = x**2
     spec = Pattern(x, y)
 
     assert len(spec) == 234
@@ -333,22 +333,22 @@ def test_extend_to():
 
 def test_to_dict():
     pattern = Pattern(np.arange(10), np.arange(10))
-    pattern.name = 'test'
+    pattern.name = "test"
     pattern.scaling = 3
     pattern.smoothing = 2
     pattern._background_pattern = Pattern(np.arange(10), np.arange(10))
     pattern_json = pattern.to_dict()
-    assert pattern_json['x'] == list(pattern._original_x)
-    assert pattern_json['y'] == list(pattern._original_y)
-    assert pattern_json['name'] == pattern.name
-    assert pattern_json['scaling'] == pattern.scaling
-    assert pattern_json['smoothing'] == pattern.smoothing
-    assert pattern_json['bkg_pattern'] == pattern._background_pattern.to_dict()
+    assert pattern_json["x"] == list(pattern._original_x)
+    assert pattern_json["y"] == list(pattern._original_y)
+    assert pattern_json["name"] == pattern.name
+    assert pattern_json["scaling"] == pattern.scaling
+    assert pattern_json["smoothing"] == pattern.smoothing
+    assert pattern_json["bkg_pattern"] == pattern._background_pattern.to_dict()
 
 
 def test_from_dict():
     pattern1 = Pattern(np.arange(10), np.arange(10))
-    pattern1.name = 'test'
+    pattern1.name = "test"
     pattern1.scaling = 3
     pattern1.smoothing = 2
     pattern1.background_pattern = Pattern(np.arange(10), np.arange(10))
@@ -360,33 +360,41 @@ def test_from_dict():
     assert pattern1.name == pattern2.name
     assert pattern1.scaling == pattern2.scaling
     assert pattern1.smoothing == pattern2.smoothing
-    assert np.array_equal(pattern1._background_pattern.x, pattern2._background_pattern.x)
-    assert np.array_equal(pattern1._background_pattern.y, pattern2._background_pattern.y)
+    assert np.array_equal(
+        pattern1._background_pattern.x, pattern2._background_pattern.x
+    )
+    assert np.array_equal(
+        pattern1._background_pattern.y, pattern2._background_pattern.y
+    )
 
 
 def test_str_representation():
-    pattern = Pattern(np.arange(10), np.arange(10), name='test')
-    assert str(pattern) == 'Pattern \'test\' with 10 points'
+    pattern = Pattern(np.arange(10), np.arange(10), name="test")
+    assert str(pattern) == "Pattern 'test' with 10 points"
 
 
 def test_delete_range():
-    pattern = Pattern(np.arange(11), np.arange(11), name = 'test')
+    pattern = Pattern(np.arange(11), np.arange(11), name="test")
     pattern = pattern.delete_range([2.3, 7.9])
     assert np.array_equal(pattern.x, np.array([0, 1, 2, 8, 9, 10]))
     assert np.array_equal(pattern.y, np.array([0, 1, 2, 8, 9, 10]))
 
 
 def test_delete_ranges():
-    pattern = Pattern(np.arange(31), np.arange(31), name = 'test')
+    pattern = Pattern(np.arange(31), np.arange(31), name="test")
     pattern = pattern.delete_ranges([[4.4, 13.3]])
     assert np.array_equal(pattern.x, np.concatenate((np.arange(5), np.arange(14, 31))))
-    
-    pattern = pattern.delete_ranges([[3.9, 13.6], [4.5, 14.4], [21.5, 24.9], [27.1, 29.5]])
-    assert np.array_equal(pattern.x, np.concatenate((np.arange(4), 
-                                                     np.arange(15, 22), 
-                                                     np.arange(25, 28), 
-                                                     np.array([30])
-                                                     )))
+
+    pattern = pattern.delete_ranges(
+        [[3.9, 13.6], [4.5, 14.4], [21.5, 24.9], [27.1, 29.5]]
+    )
+    assert np.array_equal(
+        pattern.x,
+        np.concatenate(
+            (np.arange(4), np.arange(15, 22), np.arange(25, 28), np.array([30]))
+        ),
+    )
+
 
 def test_transform_x():
     x = np.linspace(0, 10, 100)

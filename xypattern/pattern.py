@@ -530,21 +530,25 @@ class Pattern(object):
 
     def transform_x(self, fcn: callable) -> Pattern:
         """
-        Transforms the x values of the pattern using the provided function. This takes
-        care to also update the corresponding background pattern or auto background pattern
+        Transforms the x values of the pattern using the provided function.
+        This takes care to also update the corresponding background pattern
+        or auto background parameters.
 
         Example:
-        >>> test_pattern = Pattern(np.arange(1, 11) / 10, np.arange(11, 21) / 10)
+        >>> test_pattern = Pattern(
+                np.arange(1, 11) / 10,
+                np.arange(11, 21) / 10
+            )
         >>> test_pattern.x
         array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1. ])
 
         >>> new_pattern = test_pattern.transform_x(lambda x: x ** 2)
         >>> new_pattern.x
-        array([0.01, 0.04, 0.09, 0.16, 0.25, 0.36, 0.49, 0.64, 0.81, 1.  ])
+        array([0.01, 0.04, 0.09, 0.16, 0.25, 0.36, 0.49, 0.64, 0.81, 1.])
 
 
         :param fcn: function to transform the x values
-        :return: new Pattern
+        :return: current pattern with transformed x values 
         """
         self.x = fcn(self.x)
         if self._background_pattern is not None:
