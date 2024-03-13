@@ -225,12 +225,13 @@ class Pattern(object):
             x, y = self.original_data
             y = y * self.scaling + self.offset
 
-        if self._auto_bkg is not None:
+        if self.auto_bkg is not None:
             self._auto_background_before_subtraction_pattern = Pattern(x, y)
+            roi = self.auto_bkg_roi if self.auto_bkg_roi is not None else [x[0]-0.1, x[-1]+0.1]
             x, y = self._auto_background_before_subtraction_pattern.limit(
-                *self._auto_bkg_roi
+                *roi
             ).data
-            y_bkg = self._auto_bkg.extract_background(Pattern(x, y))
+            y_bkg = self.auto_bkg.extract_background(Pattern(x, y))
             self._auto_background_pattern = Pattern(
                 x, y_bkg, name="auto_bkg_" + self.name
             )
@@ -326,30 +327,38 @@ class Pattern(object):
         self._smoothing = value
         self.recalculate_pattern()
 
-    def set_auto_background_subtraction(
-        self, parameters: list[float], roi: list[float] = None, recalc_pattern=True
-    ):
+    @property
+    def auto_bkg(self) -> AutoBackground | None:
         """
-        Sets an automatic background subtraction to the pattern. The background will be subtracted from the pattern
-        when calling the data property.
-
-        :param parameters: list of parameters for the automatic background subtraction. The first parameter is the
-        smoothing amount, the second, the number of iterations for the bruckner smoothing and the third the order of the
-        chebyshev polynomial.
-        :param roi: region of interest to be used for  the background subtraction. If None, the whole pattern will be
-        used.
+        Returns the auto background object
+        :return: AutoBackground
         """
-        if roi is None:
-            min_step = self.x[1] - self.x[0]
-            max_step = self.x[-1] - self.x[-2]
-            roi = [np.min(self.x) - min_step, np.max(self.x) + max_step]
-        self._auto_bkg = SmoothBrucknerBackground(*parameters)
-        self._auto_bkg_roi = roi
-        if recalc_pattern:
-            self.recalculate_pattern()
+        return self._auto_bkg
 
-    def unset_auto_background_subtraction(self):
-        self._auto_bkg = None
+    @auto_bkg.setter
+    def auto_bkg(self, value: AutoBackground | None):
+        """
+        Sets the auto background object
+        :param value: AutoBackground
+        """
+        self._auto_bkg = value
+        self.recalculate_pattern()
+
+    @property
+    def auto_bkg_roi(self) -> list[float] | None:
+        """
+        Returns the region of interest for the auto background
+        :return: list of two floats
+        """
+        return self._auto_bkg_roi
+    
+    @auto_bkg_roi.setter
+    def auto_bkg_roi(self, value: list[float] | None):
+        """
+        Sets the region of interest for the auto background
+        :param value: list of two floats
+        """
+        self._auto_bkg_roi = value
         self.recalculate_pattern()
 
     @property
@@ -548,17 +557,17 @@ class Pattern(object):
 
 
         :param fcn: function to transform the x values
-        :return: current pattern with transformed x values 
+        :return: current pattern with transformed x values
         """
         self.x = fcn(self.x)
         if self._background_pattern is not None:
             self._background_pattern.x = fcn(self._background_pattern.x)
 
-        if self._auto_bkg_roi is not None:
-            self._auto_bkg_roi = fcn(np.array(self._auto_bkg_roi))
+        if self.auto_bkg_roi is not None:
+            self.auto_bkg_roi = fcn(np.array(self.auto_bkg_roi))
 
-        if self._auto_bkg is not None:
-            self._auto_bkg.transform_x(fcn)
+        if self.auto_bkg is not None:
+            self.auto_bkg.transform_x(fcn)
 
         self.recalculate_pattern()
 

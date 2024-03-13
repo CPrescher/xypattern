@@ -2,7 +2,13 @@
 
 - added feature to delete a range in a pattern
 - added filename field in pattern, which contains complete filepath (name will still just hold the name)
-- added transform_x function to modify the x-axis in place
+- added transform_x function to modify the x-axis in place (will also update backgrounds)
+- changed the auto background api, new usage:
+```python
+  pattern.auto_bkg = SmoothBrucknerBackground()
+  pattern.auto_bkg_roi = [10, 20]
+  pattern.auto_bkg = None # will switch it off
+```
 
 # 1.0.5 (2013-11-14)
 

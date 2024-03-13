@@ -21,6 +21,7 @@ import os
 import numpy as np
 import pytest
 from pytest import approx
+from xypattern.auto_background import SmoothBrucknerBackground
 
 from xypattern.pattern import BkgNotInRangeError
 from xypattern import Pattern
@@ -247,21 +248,19 @@ def test_automatic_background_subtraction():
     pattern, y_bkg = generate_peak_pattern(with_bkg=True)
     without_bkg_y = pattern.y - y_bkg
 
-    auto_background_subtraction_parameters = [2, 50, 50]
-    pattern.set_auto_background_subtraction(auto_background_subtraction_parameters)
+    pattern.auto_bkg = SmoothBrucknerBackground(2, 50, 50)
 
-    x_spec, y_spec = pattern.data
+    _, y_spec = pattern.data
     assert y_spec == approx(without_bkg_y, abs=1e-4)
 
 
 def test_automatic_background_subtraction_with_roi():
     pattern = generate_peak_pattern()
     roi = [1, 23]
+    pattern.auto_bkg_roi = roi
+    pattern.auto_bkg = SmoothBrucknerBackground(2, 50, 50)
 
-    auto_background_subtraction_parameters = [2, 50, 50]
-    pattern.set_auto_background_subtraction(auto_background_subtraction_parameters, roi)
-
-    x_spec, y_spec = pattern.data
+    x_spec, _ = pattern.data
 
     assert x_spec[0] > roi[0]
     assert x_spec[-1] < roi[1]
@@ -416,6 +415,6 @@ def test_transform_x_with_pattern_bkg():
 def test_transform_x_with_auto_bkg():
     x = np.linspace(0, 10, 100)
     pattern = Pattern(x, np.sin(x))
-    pattern.set_auto_background_subtraction([2, 50, 50])
+    pattern.auto_bkg = SmoothBrucknerBackground()
     pattern.transform_x(lambda x: x + 2)
     assert np.array_equal(pattern.x, x + 2)
