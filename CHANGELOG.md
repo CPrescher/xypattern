@@ -1,3 +1,9 @@
+# 1.1.0 (under development)
+
+- added feature to delete a range in a pattern
+- added filename field in pattern, which contains complete filepath (name will still just hold the name)
+- added transform_x function to modify the x-axis in place
+
 # 1.0.5 (2013-11-14)
 
 - enable poetry versioning plugin during build, to hopefully work when installing with pypi
