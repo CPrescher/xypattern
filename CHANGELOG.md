@@ -1,3 +1,7 @@
+# 1.1.1 (2024-03-13)
+
+- fixed inclusion of compiled smooth bruckner functions in wheels on linux and macos
+
 # 1.1.0 (2024-03-13)
 
 - added feature to delete a range in a pattern
