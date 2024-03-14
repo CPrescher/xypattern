@@ -1,3 +1,7 @@
+# 1.1.2 (2024-03-14)
+
+- now correctly saves a file without background (subtract_background parameter false) when auto_bkg is set
+
 # 1.1.1 (2024-03-13)
 
 - fixed inclusion of compiled smooth bruckner functions in wheels on linux and macos
