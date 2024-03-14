@@ -108,6 +108,54 @@ def test_saving_a_fxye_file(tmp_path):
     pattern.save(filename)
 
 
+def test_saving_a_chi_file_with_background(tmp_path):
+    x = np.linspace(-5, 5, 100)
+    y = x**2
+
+    pattern = Pattern(x, y)
+    pattern.background_pattern = Pattern(x, x)
+    filename = os.path.join(tmp_path, "test.chi")
+    pattern.save(filename, subtract_background=True)
+
+    assert os.path.exists(filename)
+    pattern_saved = Pattern.from_file(filename)
+    assert pattern_saved.background_pattern is None
+    assert pattern_saved.x == pytest.approx(x)
+    assert pattern_saved.y == pytest.approx(y - x)
+
+
+def test_saving_a_chi_file_with_auto_bkg(tmp_path):
+    x = np.linspace(-5, 5, 100)
+    y = x**2
+
+    pattern = Pattern(x, y)
+    pattern.auto_bkg = SmoothBrucknerBackground()
+    filename = os.path.join(tmp_path, "test.chi")
+    pattern.save(filename, subtract_background=True)
+
+    assert os.path.exists(filename)
+    pattern_saved = Pattern.from_file(filename)
+    assert pattern_saved.background_pattern is None
+    assert pattern_saved.x == pytest.approx(x)
+    assert pattern_saved.y == pytest.approx(y - pattern.auto_background_pattern.y)
+
+
+def test_saving_a_chi_file_with_auto_bkg_and_subtract_background_false(tmp_path):
+    x = np.linspace(-5, 5, 100)
+    y = x**2
+
+    pattern = Pattern(x, y)
+    pattern.auto_bkg = SmoothBrucknerBackground()
+    filename = os.path.join(tmp_path, "test.chi")
+    pattern.save(filename, subtract_background=False)
+
+    assert os.path.exists(filename)
+    pattern_saved = Pattern.from_file(filename)
+    assert pattern_saved.background_pattern is None
+    assert pattern_saved.x == pytest.approx(x)
+    assert pattern_saved.y == pytest.approx(y)
+
+
 def test_plus_and_minus_operators():
     x = np.linspace(0, 10, 100)
     pattern1 = Pattern(x, np.sin(x))

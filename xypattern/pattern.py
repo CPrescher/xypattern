@@ -101,9 +101,10 @@ class Pattern(object):
         :param subtract_background: whether to save subtracted data
         :param unit: x-unit used for the standard chi header (unused for other formats)
         """
-        x, y = self.data
-        if not subtract_background and self.background_pattern is not None:
-            y += self.background_pattern.y
+        if subtract_background:
+            x, y = self.data
+        else:
+            x, y = self.original_data
 
         num_points = len(x)
 
@@ -227,10 +228,12 @@ class Pattern(object):
 
         if self.auto_bkg is not None:
             self._auto_background_before_subtraction_pattern = Pattern(x, y)
-            roi = self.auto_bkg_roi if self.auto_bkg_roi is not None else [x[0]-0.1, x[-1]+0.1]
-            x, y = self._auto_background_before_subtraction_pattern.limit(
-                *roi
-            ).data
+            roi = (
+                self.auto_bkg_roi
+                if self.auto_bkg_roi is not None
+                else [x[0] - 0.1, x[-1] + 0.1]
+            )
+            x, y = self._auto_background_before_subtraction_pattern.limit(*roi).data
             y_bkg = self.auto_bkg.extract_background(Pattern(x, y))
             self._auto_background_pattern = Pattern(
                 x, y_bkg, name="auto_bkg_" + self.name
@@ -351,7 +354,7 @@ class Pattern(object):
         :return: list of two floats
         """
         return self._auto_bkg_roi
-    
+
     @auto_bkg_roi.setter
     def auto_bkg_roi(self, value: list[float] | None):
         """
