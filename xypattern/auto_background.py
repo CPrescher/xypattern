@@ -15,12 +15,24 @@ except ImportError as e:
 
 
 class AutoBackground:
+    """
+    Abstract base class for automatic background extraction algorithms.
+    
+    This class defines the interface for background extraction algorithms.
+    Concrete implementations should override the extract_background method
+    to provide specific background extraction functionality.
+    """
+    
     @abstractmethod
     def extract_background(self, pattern: Pattern):
         """
         Extracts the background from a pattern.
-        :param pattern: pattern to extract the background from
-        :return: background pattern
+        
+        This method should be implemented by subclasses to provide specific
+        background extraction functionality.
+        
+        :param pattern: Pattern object from which to extract the background
+        :return: numpy array of y values representing the extracted background
         """
         raise NotImplementedError
 
@@ -28,18 +40,35 @@ class AutoBackground:
     def transform_x(self, fcn: callable):
         """
         Transforms the variables dependent on x.
-        :param fcn: function to transform the x-variable
+        
+        This method should be implemented by subclasses to handle
+        transformation of x-dependent parameters when the x-axis is transformed.
+        
+        :param fcn: Function to transform the x-variable
         """
         raise NotImplementedError
 
 
 class SmoothBrucknerBackground(AutoBackground):
     """
-    Performs a background subtraction using bruckner smoothing and a chebyshev polynomial.
-    Standard parameters are found to be optimal for synchrotron XRD.
-    :param smooth_width: width of the window in x-units used for bruckner smoothing
-    :param iterations: number of iterations for the bruckner smoothing
-    :param cheb_order: order of the fitted chebyshev polynomial
+    Background extraction using Bruckner smoothing and Chebyshev polynomial fitting.
+    
+    This algorithm performs background extraction in two steps:
+    1. Applies Bruckner smoothing to the input pattern
+    2. Fits a Chebyshev polynomial to the smoothed data
+    
+    The Bruckner smoothing algorithm is particularly effective for extracting
+    backgrounds from patterns with sharp peaks, such as X-ray diffraction data.
+    
+    Standard parameters are optimized for synchrotron XRD data but can be
+    adjusted for other types of data.
+    
+    :param smooth_width: Width of the window in x-units used for Bruckner smoothing.
+                        Larger values result in smoother backgrounds.
+    :param iterations: Number of iterations for the Bruckner smoothing algorithm.
+                      More iterations typically result in better background fitting.
+    :param cheb_order: Order of the fitted Chebyshev polynomial.
+                      Higher orders can fit more complex background shapes.
     """
 
     def __init__(self, smooth_width=0.1, iterations=50, cheb_order=50):
@@ -49,6 +78,13 @@ class SmoothBrucknerBackground(AutoBackground):
 
     def extract_background(self, pattern: Pattern):
         """
+        Extract background from a pattern using Bruckner smoothing and Chebyshev polynomial fitting.
+        
+        The method first applies Bruckner smoothing to the pattern data, then fits
+        a Chebyshev polynomial to the smoothed data to create a continuous background.
+        
+        :param pattern: Pattern object from which to extract the background
+        :return: numpy array of y values representing the extracted background
         """
         x, y = pattern.data
         smooth_points = int((float(self.smooth_width) / (x[1] - x[0])))
@@ -62,8 +98,12 @@ class SmoothBrucknerBackground(AutoBackground):
 
     def transform_x(self, fcn: callable):
         """
-        Transforms the variables dependent on x.
-        :param fcn: function to transform the x-variable
+        Transform x-dependent parameters when the x-axis is transformed.
+        
+        This method adjusts the smooth_width parameter when the x-axis is transformed,
+        ensuring that the background extraction behaves consistently after transformation.
+        
+        :param fcn: Function to transform the x-variable
         """
         self.smooth_width = fcn(self.smooth_width)
     
