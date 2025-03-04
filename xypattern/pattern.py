@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter1d
 
 from .util.signal import Signal
-from .auto_background import AutoBackground, SmoothBrucknerBackground
+from .auto_background import AutoBackground
 
 
 class Pattern(object):
@@ -77,17 +77,19 @@ class Pattern(object):
             raise ValueError("Wrong data format for pattern file! - " + filename)
 
     @staticmethod
-    def from_file(filename: str, skip_rows: int = 0) -> Pattern | "-1":
+    def from_file(filename: str, skiprows: int = 0) -> Pattern:
         """
         Loads a pattern from a file. The file can be either a .xy or a .chi file. The .chi file will be loaded with
         skiprows=4 by default.
 
         :param filename: path to the file
-        :param skip_rows: number of rows to skip when loading the data (header)
+        :param skiprows: number of rows to skip when loading the data (header)
+        :return: A new Pattern object loaded from the file
+        :raises ValueError: If the file format is incorrect
         """
         try:
             pattern = Pattern()
-            pattern.load(filename, skip_rows)
+            pattern.load(filename, skiprows)
             return pattern
 
         except ValueError:
@@ -190,10 +192,9 @@ class Pattern(object):
 
     def recalculate_pattern(self):
         """
-        Returns the data of the pattern. If a background pattern is set, the background will be subtracted from the
-        pattern. If smoothing is set, the pattern will be smoothed.
-
-        :return: Tuple of x and y values
+        Recalculates the pattern data based on the current settings.
+        Applies background subtraction, auto background, scaling, offset, and smoothing.
+        This method is called automatically when any of these settings are changed.
         """
         if self._background_pattern is not None:
             # create background function
@@ -361,6 +362,9 @@ class Pattern(object):
         Sets the region of interest for the auto background
         :param value: list of two floats
         """
+        if value is not None and (not isinstance(value, list) or len(value) != 2):
+            raise ValueError("auto_bkg_roi must be a list with exactly two elements")
+        
         self._auto_bkg_roi = value
         self.recalculate_pattern()
 
@@ -396,13 +400,17 @@ class Pattern(object):
 
     def extend_to(self, x_value: float, y_value: float) -> Pattern:
         """
-        Extends the current pattern to a specific x_value by filling it with the y_value. Does not modify inplace but
-        returns a new filled Pattern
+        Extends the current pattern to a specific x_value by filling it with the y_value. 
+        Does not modify inplace but returns a new filled Pattern.
+        
+        The extension can be either to a lower x value than the current minimum or to a higher x value
+        than the current maximum. The step size of the extension is determined by the average step size
+        of the current pattern.
 
-        :param x_value: Point to which extending the pattern should be smaller than the lowest x-value in the pattern or
-        vice versa
-        :param y_value: number to fill the pattern with
-        :return: extended Pattern
+        :param x_value: Target x value to extend to. Should be smaller than the minimum x value or 
+                       larger than the maximum x value of the current pattern.
+        :param y_value: Y value to use for the extension points
+        :return: Extended Pattern
         """
         x_step = np.mean(np.diff(self.x))
         x_min = np.min(self.x)
@@ -444,6 +452,9 @@ class Pattern(object):
                 if self._background_pattern is not None
                 else None
             ),
+            "auto_bkg": self._auto_bkg.__class__.__name__ if self._auto_bkg is not None else None,
+            "auto_bkg_params": self._auto_bkg.__dict__ if self._auto_bkg is not None else None,
+            "auto_bkg_roi": self._auto_bkg_roi if self._auto_bkg_roi is not None else None,
         }
 
     @staticmethod
@@ -468,6 +479,20 @@ class Pattern(object):
         pattern.background_pattern = bkg_pattern
 
         pattern.smoothing = json_dict["smoothing"]
+        
+        # Restore auto background settings if available
+        if "auto_bkg" in json_dict and json_dict["auto_bkg"] is not None:
+            from .auto_background import SmoothBrucknerBackground
+            if json_dict["auto_bkg"] == "SmoothBrucknerBackground":
+                auto_bkg = SmoothBrucknerBackground()
+                if "auto_bkg_params" in json_dict and json_dict["auto_bkg_params"] is not None:
+                    for key, value in json_dict["auto_bkg_params"].items():
+                        setattr(auto_bkg, key, value)
+                pattern.auto_bkg = auto_bkg
+        
+        if "auto_bkg_roi" in json_dict and json_dict["auto_bkg_roi"] is not None:
+            pattern.auto_bkg_roi = json_dict["auto_bkg_roi"]
+            
         pattern.recalculate_pattern()
 
         return pattern
@@ -562,12 +587,15 @@ class Pattern(object):
         :param fcn: function to transform the x values
         :return: current pattern with transformed x values
         """
-        self.x = fcn(self.x)
+        # Store original values to avoid triggering recalculate_pattern multiple times
+        original_x = self._original_x
+        self._original_x = fcn(original_x)
+        
         if self._background_pattern is not None:
-            self._background_pattern.x = fcn(self._background_pattern.x)
+            self._background_pattern.transform_x(fcn)
 
         if self.auto_bkg_roi is not None:
-            self.auto_bkg_roi = fcn(np.array(self.auto_bkg_roi))
+            self.auto_bkg_roi = fcn(np.array(self.auto_bkg_roi)).tolist()
 
         if self.auto_bkg is not None:
             self.auto_bkg.transform_x(fcn)
@@ -595,7 +623,7 @@ class Pattern(object):
 
         if orig_x.shape != other_x.shape:
             # the background will be interpolated
-            other_fcn = interp1d(other_x, other_y, kind="cubic")
+            other_fcn = interp1d(other_x, other_y, kind="linear")
 
             # find overlapping x and y values:
             ind = np.where((orig_x <= np.max(other_x)) & (orig_x >= np.min(other_x)))
@@ -668,6 +696,39 @@ class Pattern(object):
 
     def __str__(self):
         return f"Pattern '{self.name}' with {len(self)} points"
+
+    def copy(self) -> Pattern:
+        """
+        Creates a deep copy of the pattern.
+        
+        :return: A new Pattern object with the same properties
+        """
+        pattern = Pattern(
+            np.copy(self._original_x),
+            np.copy(self._original_y),
+            self.name
+        )
+        
+        pattern.scaling = self.scaling
+        pattern.offset = self.offset
+        pattern.smoothing = self.smoothing
+        
+        if self._background_pattern is not None:
+            pattern.background_pattern = self._background_pattern.copy()
+            
+        if self._auto_bkg is not None:
+            # Import here to avoid circular imports
+            from .auto_background import SmoothBrucknerBackground
+            if isinstance(self._auto_bkg, SmoothBrucknerBackground):
+                auto_bkg = SmoothBrucknerBackground()
+                for key, value in self._auto_bkg.__dict__.items():
+                    setattr(auto_bkg, key, value)
+                pattern.auto_bkg = auto_bkg
+                
+        if self._auto_bkg_roi is not None:
+            pattern.auto_bkg_roi = self._auto_bkg_roi.copy()
+            
+        return pattern
 
 
 class BkgNotInRangeError(Exception):

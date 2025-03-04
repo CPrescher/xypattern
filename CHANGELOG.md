@@ -1,3 +1,9 @@
+# 1.2.0 (in progress)
+
+- adding and subtracting patterns with different x-values will now work both with linear interpolation (before subtraction was using cubic interpolation and adding linear)
+- pattern to_dict and from_dict now also save and restore auto_bkg and auto_bkg_roi
+- added a copy method to pattern class
+
 # 1.1.2 (2024-03-14)
 
 - now correctly saves a file without background (subtract_background parameter false) when auto_bkg is set
