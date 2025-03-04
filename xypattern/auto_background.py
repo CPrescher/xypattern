@@ -24,6 +24,14 @@ class AutoBackground:
         """
         raise NotImplementedError
 
+    @staticmethod
+    def transform_x(self, fcn: callable):
+        """
+        Transforms the variables dependent on x.
+        :param fcn: function to transform the x-variable
+        """
+        raise NotImplementedError
+
 
 class SmoothBrucknerBackground(AutoBackground):
     """
@@ -51,3 +59,11 @@ class SmoothBrucknerBackground(AutoBackground):
         cheb_parameters = np.polynomial.chebyshev.chebfit(x_cheb, y_smooth, self.cheb_order)
 
         return np.polynomial.chebyshev.chebval(x_cheb, cheb_parameters)
+
+    def transform_x(self, fcn: callable):
+        """
+        Transforms the variables dependent on x.
+        :param fcn: function to transform the x-variable
+        """
+        self.smooth_width = fcn(self.smooth_width)
+    

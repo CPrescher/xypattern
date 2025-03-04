@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xypattern"
-version = "1.0.5"
+version = "1.1.2"
 description = "Library for handling x-y pattern data."
 authors = ["Clemens Prescher <clemens.prescher@gmail.com>"]
 license = "MIT"
@@ -19,7 +19,11 @@ classifiers = [
     'Topic :: Scientific/Engineering :: Information Analysis',
 ]
 
-include = ["xypattern/util/*.pyd"]  # Compiled extensions
+include = [
+    # C extensions must be included in the wheel distributions
+    {path = "xypattern/util/*.so", format = "wheel"},
+    {path = "xypattern/util/*.pyd", format = "wheel"},
+]
 exclude = ["tests/*"] # Exclude tests from package
 
 
