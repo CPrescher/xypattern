@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Poetry on macOS and Linux - Fails on windows for some reason
         if: ${{ matrix.os != 'windows-latest' }}
@@ -41,7 +41,7 @@ jobs:
         run: poetry build
 
       - name: Upload wheels to artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist/*
@@ -56,7 +56,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: wheels
           path: dist
