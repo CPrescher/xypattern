@@ -369,7 +369,7 @@ class Pattern(object):
 
         self._pattern_x = x
         self._pattern_y = y
-        self._changed.emit()
+        self._changed.emit(self)
 
     @data.setter
     def data(self, data: tuple[np.ndarray, np.ndarray]):
@@ -1160,6 +1160,10 @@ class Pattern(object):
         - Modifying x or y data
         - Applying automatic background subtraction
         
+        When emitted, this signal passes the pattern itself (self) as an argument
+        to all connected callbacks, allowing them to directly access the pattern
+        that changed.
+        
         The signal can be connected to callback functions that will be executed
         when the pattern changes. This is particularly useful for implementing
         reactive UI updates or for chaining pattern processing steps.
@@ -1168,13 +1172,14 @@ class Pattern(object):
             >>> pattern = Pattern(x_data, y_data)
             >>> 
             >>> # Connect a callback to the changed signal
-            >>> def on_pattern_changed():
+            >>> def on_pattern_changed(pattern):
             >>>     print(f"Pattern '{pattern.name}' has changed")
+            >>>     print(f"New max value: {pattern.y.max()}")
             >>> 
             >>> pattern.changed.connect(on_pattern_changed)
             >>> 
-            >>> # Now when we modify the pattern, our callback will be called
-            >>> pattern.scaling = 2.0  # Prints: Pattern '...' has changed
+            >>> # Now when we modify the pattern, our callback will be called with the pattern as argument
+            >>> pattern.scaling = 2.0  # Triggers callback with pattern as argument
             >>> 
             >>> # Disconnect the callback when no longer needed
             >>> pattern.changed.disconnect(on_pattern_changed)

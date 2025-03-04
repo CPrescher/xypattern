@@ -159,7 +159,7 @@ class Signal:
             else:
                 try:
                     handle(*args)
-                except AttributeError:
+                except (AttributeError, TypeError):
                     handle()
 
     def clear(self):

@@ -3,6 +3,8 @@
 - adding and subtracting patterns with different x-values will now work both with linear interpolation (before subtraction was using cubic interpolation and adding linear)
 - pattern to_dict and from_dict now also save and restore auto_bkg and auto_bkg_roi
 - added a copy method to pattern class
+- pattern changed signal now passes the pattern itself as argument
+- improved documentation and added examples
 
 # 1.1.2 (2024-03-14)
 
