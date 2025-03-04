@@ -9,7 +9,7 @@ xypattern can be installed using pip:
     pip install xypattern
 
 Requirements
------------
+------------
 
 xypattern requires:
 

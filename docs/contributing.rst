@@ -22,7 +22,7 @@ Setting up the development environment
        poetry install
 
 Running tests
-------------
+-------------
 
 Run the tests using pytest:
 
@@ -31,7 +31,7 @@ Run the tests using pytest:
     poetry run pytest
 
 Code style
----------
+----------
 
 Please follow the existing code style. We recommend using tools like:
 
@@ -40,7 +40,7 @@ Please follow the existing code style. We recommend using tools like:
 - flake8 for linting
 
 Submitting changes
------------------
+------------------
 
 1. Create a branch for your changes:
 

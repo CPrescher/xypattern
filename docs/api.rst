@@ -11,7 +11,7 @@ Pattern
    :show-inheritance:
 
 Auto Background
---------------
+---------------
 
 .. automodule:: xypattern.auto_background
    :members:
