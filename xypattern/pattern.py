@@ -726,7 +726,7 @@ class Pattern(object):
                 pattern.auto_bkg = auto_bkg
                 
         if self._auto_bkg_roi is not None:
-            pattern.auto_bkg_roi = self._auto_bkg_roi.copy()
+            pattern.auto_bkg_roi = list(self._auto_bkg_roi)
             
         return pattern
 

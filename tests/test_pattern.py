@@ -466,3 +466,93 @@ def test_transform_x_with_auto_bkg():
     pattern.auto_bkg = SmoothBrucknerBackground()
     pattern.transform_x(lambda x: x + 2)
     assert np.array_equal(pattern.x, x + 2)
+
+
+def test_copy_basic():
+    """Test that the copy method creates a new Pattern with the same data."""
+    x = np.linspace(0, 10, 100)
+    y = np.sin(x)
+    pattern = Pattern(x, y, name="test_pattern")
+    
+    # Set some properties
+    pattern.scaling = 2.0
+    pattern.offset = 1.0
+    pattern.smoothing = 0.5
+    
+    # Create a copy
+    pattern_copy = pattern.copy()
+    
+    # Check that the copy has the same properties
+    assert pattern_copy.name == pattern.name
+    assert np.array_equal(pattern_copy.x, pattern.x)
+    assert np.array_equal(pattern_copy.y, pattern.y)
+    assert pattern_copy.scaling == pattern.scaling
+    assert pattern_copy.offset == pattern.offset
+    assert pattern_copy.smoothing == pattern.smoothing
+    
+    # Check that it's a deep copy by modifying the original
+    pattern.scaling = 3.0
+    pattern.offset = 2.0
+    pattern.smoothing = 1.0
+    pattern.name = "modified_pattern"
+    
+    # The copy should not be affected
+    assert pattern_copy.name == "test_pattern"
+    assert pattern_copy.scaling == 2.0
+    assert pattern_copy.offset == 1.0
+    assert pattern_copy.smoothing == 0.5
+
+
+def test_copy_with_background():
+    """Test that the copy method properly handles background patterns."""
+    x = np.linspace(0, 10, 100)
+    y = np.sin(x)
+    pattern = Pattern(x, y, name="test_pattern")
+    
+    # Create a background pattern
+    bkg = Pattern(x, 0.1 * x, name="background")
+    pattern.background_pattern = bkg
+    
+    # Create a copy
+    pattern_copy = pattern.copy()
+    
+    # Check that the background was copied
+    assert pattern_copy.background_pattern is not None
+    assert pattern_copy.background_pattern.name == "background"
+    assert np.array_equal(pattern_copy.background_pattern.x, bkg.x)
+    assert np.array_equal(pattern_copy.background_pattern.y, bkg.y)
+    
+    # Check that it's a deep copy by modifying the original background
+    pattern.background_pattern.name = "modified_background"
+    
+    # The copy's background should not be affected
+    assert pattern_copy.background_pattern.name == "background"
+
+
+def test_copy_with_auto_background():
+    """Test that the copy method properly handles auto background settings."""
+    x = np.linspace(0, 10, 100)
+    y = np.sin(x) + x * 0.1  # Add a linear background
+    pattern = Pattern(x, y, name="test_pattern")
+    
+    # Set auto background
+    pattern.auto_bkg = SmoothBrucknerBackground(smooth_width=0.2, iterations=30, cheb_order=20)
+    pattern.auto_bkg_roi = [1.0, 9.0]
+    
+    # Create a copy
+    pattern_copy = pattern.copy()
+    
+    # Check that the auto background settings were copied
+    assert pattern_copy.auto_bkg is not None
+    assert pattern_copy.auto_bkg_roi == pattern.auto_bkg_roi
+    assert pattern_copy.auto_bkg.smooth_width == pattern.auto_bkg.smooth_width
+    assert pattern_copy.auto_bkg.iterations == pattern.auto_bkg.iterations
+    assert pattern_copy.auto_bkg.cheb_order == pattern.auto_bkg.cheb_order
+    
+    # Check that it's a deep copy by modifying the original
+    pattern.auto_bkg.smooth_width = 0.5
+    pattern.auto_bkg_roi = [2.0, 8.0]
+    
+    # The copy should not be affected
+    assert pattern_copy.auto_bkg_roi == [1.0, 9.0]
+    assert pattern_copy.auto_bkg.smooth_width == 0.2
