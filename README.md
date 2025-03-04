@@ -1,5 +1,6 @@
 ![codecov](https://codecov.io/gh/CPrescher/xypattern/graph/badge.svg?token=05FUJFOV3R)
 ![CI](https://github.com/CPrescher/xypattern/actions/workflows/CI.yml/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/xypattern/badge/?version=latest)](https://xypattern.readthedocs.io/en/latest/?badge=latest)
 
 # xypattern
 
@@ -104,7 +105,7 @@ p2 = p1.copy()
 
 ## API Documentation
 
-For detailed API documentation, please visit [https://cprescher.github.io/xypattern/](https://cprescher.github.io/xypattern/) (or run `pdoc xypattern` locally after installing pdoc).
+For detailed API documentation, please visit [https://xypattern.readthedocs.io/](https://xypattern.readthedocs.io/) or [https://cprescher.github.io/xypattern/](https://cprescher.github.io/xypattern/).
 
 ### Building Documentation
 
