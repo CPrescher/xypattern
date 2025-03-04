@@ -55,6 +55,8 @@ cython = "^3.0.3"
 pytest = "^7.4.2"
 pytest-cov = "^4.1.0"
 setuptools = { version = "^68.2.2", python = "^3.12" }
+sphinx = "<7.0.0"
+sphinx-rtd-theme = "<2.0.0"
 
 [tool.poetry.scripts]
 stitch_patterns = "xypattern.scripts.stitch_patterns:main"

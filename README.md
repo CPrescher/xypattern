@@ -106,6 +106,23 @@ p2 = p1.copy()
 
 For detailed API documentation, please visit [https://cprescher.github.io/xypattern/](https://cprescher.github.io/xypattern/) (or run `pdoc xypattern` locally after installing pdoc).
 
+### Building Documentation
+
+The project documentation is built using Sphinx. To build the documentation locally:
+
+```bash
+# Install development dependencies
+poetry install --with dev
+
+# Navigate to the docs directory
+cd docs
+
+# Build the documentation
+make html
+```
+
+The built documentation will be available in the `docs/_build/html` directory. Open `index.html` in your web browser to view it.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
