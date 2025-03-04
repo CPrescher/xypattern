@@ -4,7 +4,8 @@
 - pattern to_dict and from_dict now also save and restore auto_bkg and auto_bkg_roi
 - added a copy method to pattern class
 - pattern changed signal now passes the pattern itself as argument
-- improved documentation and added examples
+- improved code documentation and added examples
+- added online documentation at https://xypattern.readthedocs.io/en/latest/
 
 # 1.1.2 (2024-03-14)
 
