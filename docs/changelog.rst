@@ -5,11 +5,7 @@ Changelog
 This page documents the changes between versions of xypattern.
 
 .. note::
-   For the most up-to-date changelog, please refer to the `CHANGELOG.md <https://github.com/CPrescher/xypattern/blob/main/CHANGELOG.md>`_ file in the repository.
+   The changelog is automatically generated from the project's CHANGELOG.md file.
 
-Version 1.1.2
--------------
-
-* Current version
-
-For a complete history of changes, please see the `CHANGELOG.md <https://github.com/CPrescher/xypattern/blob/main/CHANGELOG.md>`_ file in the repository. 
+.. include:: ../CHANGELOG.md
+   :parser: myst_parser.sphinx_ 
