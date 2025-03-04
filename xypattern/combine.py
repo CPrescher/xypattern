@@ -3,14 +3,32 @@ import numpy as np
 from scipy.interpolate import interp1d
 from .pattern import Pattern
 
+"""
+Functions for combining multiple Pattern objects.
+
+This module provides utilities for working with multiple patterns, including
+scaling patterns to match each other and stitching them together to create
+a single continuous pattern.
+"""
 
 def stitch_patterns(patterns: list[Pattern], binning=None) -> Pattern:
     """
-    Stitch together a list of patterns.
-    :param patterns: list of patterns to be stitched together
-    :param binning: binning to be applied to the stitched pattern, if None, the binning of the first pattern will be
-                    used
-    :return: stitched pattern
+    Stitch together multiple patterns into a single continuous pattern.
+    
+    This function concatenates the x and y values from all patterns and then
+    applies rebinning to create a uniform x-spacing. The patterns should be
+    properly scaled before stitching (see scale_patterns function).
+    
+    :param patterns: List of Pattern objects to be stitched together
+    :param binning: Bin size for the output pattern. If None, the bin size of the
+                   first pattern will be used.
+    :return: A new Pattern object containing the stitched data
+    
+    Example:
+        >>> p1 = Pattern.from_file('low_angle.xy')
+        >>> p2 = Pattern.from_file('high_angle.xy')
+        >>> scale_patterns([p1, p2])  # Scale patterns to match each other
+        >>> stitched = stitch_patterns([p1, p2])
     """
     if binning is None:
         binning = patterns[0].x[1] - patterns[0].x[0]
@@ -22,9 +40,23 @@ def stitch_patterns(patterns: list[Pattern], binning=None) -> Pattern:
 
 def scale_patterns(patterns: list[Pattern]):
     """
-    Scales a list of patterns to the first pattern in respect to x.  The scaling will be in place setting the scale
-    attribute of the patterns.
-    :param patterns: list of patterns to be scaled
+    Scale multiple patterns to match each other in overlapping regions.
+    
+    This function scales patterns in place by modifying their scaling attribute.
+    The first pattern (after sorting by x[0]) is used as the reference with a
+    scaling of 1.0. Each subsequent pattern is scaled to match the previous one
+    in their overlapping region.
+    
+    The patterns must have overlapping x-ranges for scaling to work properly.
+    
+    :param patterns: List of Pattern objects to be scaled
+    :raises ValueError: If no overlap is found between adjacent patterns
+    
+    Example:
+        >>> p1 = Pattern.from_file('low_angle.xy')
+        >>> p2 = Pattern.from_file('high_angle.xy')
+        >>> scale_patterns([p1, p2])
+        >>> # p1.scaling will be 1.0, p2.scaling will be adjusted to match p1
     """
     for pattern in patterns:
         pattern.scaling = 1
@@ -48,10 +80,19 @@ def scale_patterns(patterns: list[Pattern]):
 
 def find_overlap(p1: Pattern, p2: Pattern) -> tuple[float, float] | None:
     """
-    Find the overlap in x between two patterns
-    :param p1: pattern 1
-    :param p2: pattern 2
-    :return: tuple of x_min and x_max for the overlapping region or None if no overlap can be found
+    Find the overlapping x-range between two patterns.
+    
+    :param p1: First Pattern object
+    :param p2: Second Pattern object
+    :return: Tuple of (x_min, x_max) for the overlapping region, or None if no overlap exists
+    
+    Example:
+        >>> overlap = find_overlap(pattern1, pattern2)
+        >>> if overlap:
+        >>>     x_min, x_max = overlap
+        >>>     print(f"Patterns overlap from {x_min} to {x_max}")
+        >>> else:
+        >>>     print("No overlap between patterns")
     """
     x_min = max(p1.x[0], p2.x[0])
     x_max = min(p1.x[-1], p2.x[-1])
@@ -62,10 +103,20 @@ def find_overlap(p1: Pattern, p2: Pattern) -> tuple[float, float] | None:
 
 def find_scaling(p1: Pattern, p2: Pattern) -> float | None:
     """
-    Find the scaling factor of p2 to p1
-    :param p1: pattern 1
-    :param p2: pattern 2
-    :return: scaling factor
+    Calculate the scaling factor to match p2 to p1 in their overlapping region.
+    
+    This function finds the average ratio of y-values between p1 and p2 in their
+    overlapping x-range. If the x-values don't exactly match, linear interpolation
+    is used to estimate the y-values at matching x-positions.
+    
+    :param p1: Reference Pattern object
+    :param p2: Pattern object to be scaled
+    :return: Scaling factor to apply to p2 to match p1, or None if no overlap exists
+    
+    Example:
+        >>> scaling = find_scaling(reference_pattern, pattern_to_scale)
+        >>> if scaling is not None:
+        >>>     pattern_to_scale.scaling = scaling
     """
     overlap = find_overlap(p1, p2)
     if overlap is None:
