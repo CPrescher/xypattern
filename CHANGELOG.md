@@ -1,3 +1,7 @@
+# 1.2.2 (2025-03-20)
+
+- build wheels for python 3.13
+
 # 1.2.1 (2025-03-20)
 
 - added support for python 3.13
