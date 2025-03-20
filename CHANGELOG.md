@@ -1,3 +1,7 @@
+# 1.2.1 (2025-03-20)
+
+- added support for python 3.13
+
 # 1.2.0 (2025-03-04)
 
 - adding and subtracting patterns with different x-values will now work both with linear interpolation (before subtraction was using cubic interpolation and adding linear)
