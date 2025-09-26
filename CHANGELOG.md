@@ -1,7 +1,6 @@
 # 1.2.3 (2025-09-26)
 
 - allow numpy version >=2 for python versions >=3.9
-- enable build wheels for python 3.14
 
 # 1.2.2 (2025-03-20)
 
