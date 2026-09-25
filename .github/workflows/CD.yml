@@ -23,7 +23,13 @@ jobs:
           fetch-depth: 0
 
       - name: Install Poetry
-        run: pipx install poetry==2.2.1
+        run: |
+          pipx install poetry==2.2.1
+          pipx inject poetry "poetry-dynamic-versioning[plugin]"
+
+      - name: Keep virtualenv compatible with Python 3.8
+        if: matrix.python-version == '3.8'
+        run: pipx inject poetry "virtualenv<21.5"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
@@ -31,9 +37,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
           cache: 'poetry'
-
-      - name: Add Dynamic Versioning Plugin
-        run: poetry self add poetry-dynamic-versioning[plugin]
 
       - name: Build Package
         run: |
