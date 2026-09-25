@@ -1,3 +1,11 @@
+# Unreleased
+
+- Add Python 3.15 prerelease support with compatible NumPy, SciPy, and Cython versions, plus CI and wheel builds on Linux, macOS, and Windows.
+- Add Python 3.14 support, including compatible NumPy/SciPy dependencies and release wheels.
+- Refresh Cython, development dependencies, and the lock file while retaining Python 3.8–3.13 support.
+- Test installed release wheels and verify source-distribution builds on Python 3.14 and 3.15.
+- Fix dynamic version substitution to update `xypattern.__version__`.
+
 # 1.2.3 (2025-09-26)
 
 - allow numpy version >2 for python versions >=3.9

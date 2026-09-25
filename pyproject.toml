@@ -34,34 +34,47 @@ pattern = "default-unprefixed"
 style = "semver"
 
 [tool.poetry-dynamic-versioning.substitution]
-files = ["dioptas/__init__.py"]
+files = ["xypattern/__init__.py"]
 
 
 
 [tool.poetry.dependencies]
-python = ">=3.8, <3.14"
+python = ">=3.8, <3.16"
 numpy = [
   { version = "^1.24.0", python = ">=3.8, <3.9" },
-  { version = ">=1.26,<3.0", python = ">=3.9" }
+  { version = ">=1.26,<3.0", python = ">=3.9, <3.14" },
+  { version = ">=2.3.3,<3.0", python = ">=3.14, <3.15" },
+  { version = ">=2.5.2,<3.0", python = ">=3.15" }
 ]
 scipy = [
   { version = "^1.9.3", python = "<3.10" },
-  { version = "^1.11.3", python = ">=3.10" }
+  { version = "^1.11.3", python = ">=3.10, <3.14" },
+  { version = "^1.16.1", python = ">=3.14, <3.15" },
+  { version = "^1.18.1", python = ">=3.15" }
 ]
 
 
 [tool.poetry.group.dev.dependencies]
-cython = "^3.0.3"
-pytest = "^7.4.2"
-pytest-cov = "^4.1.0"
-setuptools = { version = "^68.2.2", python = "^3.12" }
-sphinx = "<7.0.0"
-sphinx-rtd-theme = "<2.0.0"
-myst-parser = "<0.19.0"
+cython = [
+  { version = ">=3.1,<4", python = "<3.15" },
+  { version = ">=3.3,<4", python = ">=3.15" }
+]
+pytest = ">=7.4.4,<10"
+pytest-cov = ">=4.1,<8"
+setuptools = ">=68.2.2"
+sphinx = ">=6,<10"
+sphinx-rtd-theme = ">=1.3,<4"
+myst-parser = ">=0.18,<6"
 
 [tool.poetry.scripts]
 stitch_patterns = "xypattern.scripts.stitch_patterns:main"
 
 [build-system]
-requires = ["poetry-core", "cython", "setuptools", "poetry-dynamic-versioning"]
+requires = [
+    "poetry-core>=1.9",
+    "cython>=3.1,<4; python_version < '3.15'",
+    "cython>=3.3,<4; python_version >= '3.15'",
+    "setuptools>=68.2.2",
+    "poetry-dynamic-versioning>=1.0,<2",
+]
 build-backend = "poetry_dynamic_versioning.backend"
