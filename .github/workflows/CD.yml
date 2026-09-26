@@ -6,6 +6,12 @@ name: CD
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to rebuild and publish
+        required: true
+        type: string
 
 jobs:
   build_package:
@@ -21,15 +27,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Install Poetry
         run: |
           pipx install poetry==2.2.1
           pipx inject poetry "poetry-dynamic-versioning[plugin]"
 
-      - name: Keep virtualenv compatible with Python 3.8
+      - name: Keep Poetry tooling compatible with Python 3.8
         if: matrix.python-version == '3.8'
-        run: pipx inject --force poetry "virtualenv<21.5"
+        # Poetry executes its own packaging code inside the target interpreter.
+        run: pipx inject --force poetry "virtualenv<21.5" "packaging<26.3"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6

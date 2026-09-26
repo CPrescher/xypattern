@@ -31,9 +31,10 @@ jobs:
     - name: Install poetry
       run: pipx install poetry==2.2.1
 
-    - name: Keep virtualenv compatible with Python 3.8
+    - name: Keep Poetry tooling compatible with Python 3.8
       if: matrix.python-version == '3.8'
-      run: pipx inject --force poetry "virtualenv<21.5"
+      # Poetry executes its own packaging code inside the target interpreter.
+      run: pipx inject --force poetry "virtualenv<21.5" "packaging<26.3"
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v6
