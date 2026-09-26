@@ -10,6 +10,12 @@ A simple small library to handle x-y patterns, such as are collected with x-ray 
 
 ## Installation
 
+Supports Python 3.8–3.14. On Python 3.14, NumPy 2.3.3 or newer and SciPy
+1.16.1 or newer are required; pip selects compatible dependencies automatically.
+
+Python 3.15 has prerelease support, tested with 3.15.0rc2. It requires NumPy
+2.5.2 or newer, SciPy 1.18.1 or newer, and Cython 3.3 or newer for source builds.
+
 ```bash
 pip install xypattern
 ```
@@ -125,6 +131,19 @@ make html
 The built documentation will be available in the `docs/_build/html` directory. Open `index.html` in your web browser to view it.
 
 ## Contributing
+
+To set up a development environment and run the tests (including the compiled
+Cython extension):
+
+```bash
+poetry env use python3.14
+poetry install
+poetry run pytest
+```
+
+Building from source requires a C compiler. CI tests Python 3.8–3.15, including
+the latest Python 3.15 prerelease on Linux, macOS, and Windows. Release wheels
+are built for all three platforms.
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
