@@ -51,6 +51,16 @@ jobs:
           poetry env use python
           poetry build
 
+      - name: Repair Linux wheels for PyPI
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          pipx install --python /usr/bin/python3 auditwheel
+          pipx inject --include-apps auditwheel patchelf
+          auditwheel repair --plat manylinux_2_39_x86_64 --wheel-dir repaired dist/*.whl
+          rm dist/*.whl
+          mv repaired/*.whl dist/
+
       - name: Test installed wheel
         shell: bash
         run: |
@@ -62,7 +72,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}-py${{ matrix.python-version }}
-          path: dist/*
+          path: dist/*.whl
+
+      - name: Upload source distribution once
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-source
+          path: dist/*.tar.gz
 
   pypi-publish:
     name: Upload release to PyPI
