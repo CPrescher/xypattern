@@ -1,4 +1,4 @@
-# Unreleased
+# 1.2.4 (2026-09-26)
 
 - Add Python 3.15 prerelease support with compatible NumPy, SciPy, and Cython versions, plus CI and wheel builds on Linux, macOS, and Windows.
 - Add Python 3.14 support, including compatible NumPy/SciPy dependencies and release wheels.
